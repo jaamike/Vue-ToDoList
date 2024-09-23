@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Vue-ToDoList
 =======
 # to-do-list
