@@ -1,5 +1,5 @@
 
-# Vue-ToDoList uing JSON WEB TOKEN
+# Vue-ToDoList using JSON WEB TOKEN
 =======
 # to-do-list
 
