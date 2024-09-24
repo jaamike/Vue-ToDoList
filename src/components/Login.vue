@@ -1,193 +1,158 @@
 <template>
-    <div class="login-container">
-      <h1 class="title">Create Your Account</h1>
-      <form @submit.prevent="handlelogin" class="form">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input 
-            v-model="email" 
-            type="email" 
-            id="email" 
-            required 
-            placeholder="Enter your email address"
-          />
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input 
-            v-model="password" 
-            type="password" 
-            id="password" 
-            required 
-            placeholder="Enter your password"
-          />
-        </div>
-        <button type="submit" class="login-button" :disabled="loading">
-          <!-- Show loading spinner while loading -->
-          <span v-if="loading" class="loading-spinner"></span>
-          <span v-else>login</span>
-        </button>
-      </form>
-      <p class="login-link">
-        Don't have an account? 
-        <router-link to="/login">login here</router-link>
-      </p>
-   <!-- Popup Component -->
-   <MessagePopup 
-      :visible="showMessage" 
-      :message="message" 
-      :messageType="messageType" 
-    />
-    </div>
-  </template>
-  
-  <script>
-  import { login } from '@/services/authService';
-  import MessagePopup from '@/components/MessagePopup.vue'; // Import the popup component
+  <div class="login-container">
+    <h1 class="title">Login Your Account</h1>
+    <form @submit.prevent="handleLogin" class="form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          v-model="email" 
+          type="email" 
+          id="email" 
+          required 
+          placeholder="Enter your email address"
+        />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          v-model="password" 
+          type="password" 
+          id="password" 
+          required 
+          placeholder="Enter your password"
+        />
+      </div>
+      <button type="submit" class="login-button" :disabled="loading">
+        <span v-if="loading" class="loading-spinner"></span>
+        <span v-else >Login</span>
+      </button>
+    </form>
+    <p class="login-link">
+      Don't have an account? 
+      <router-link to="/register">Register here</router-link>
+    </p>
+  </div>
+</template>
 
-  export default {
-    components: {
-      MessagePopup,
+<script>
+import { login } from '@/services/authService';
+import { useToast } from 'vue-toastification';
+
+export default {
+  data() {
+    return {
+      email: '',
+      password: '',
+      loading: false,
+    };
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+  methods: {
+    async handleLogin() {
+      this.loading = true;
+
+      try {
+        const result = await login(this.email, this.password);
+        this.$router.push('/todolist'); // Redirect after login
+      } catch (error) {
+        const errorMsg = error.response?.data?.msg || 'Login failed. Please try again.';
+        this.toast.error(errorMsg);
+      } finally {
+        this.loading = false;
+      }
     },
-    data() {
-      return {
-        name: '',
-        email: '',
-        password: '',
-        loading: false,
-        showMessage: false,
-        message: '',
-        messageType: 'error', // Default to 'error'
-      };
-    },
-    methods: {
-      async handlelogin() {
-        this.loading = true;
-        this.showMessage = false;
-  
-        try {
-          const result = await login(this.name, this.email, this.password);
-          this.message = result.msg;
-          this.messageType = 'success';
-          this.showMessage = true;
-  
-          // Redirect to login after 3 seconds
-          setTimeout(() => {
-            this.showMessage = false;
-            this.$router.push('/login');
-          }, 3000);
-        } catch (error) {
-          this.message = error.response?.data?.msg || 'Registration failed. Please try again.';
-          this.messageType = 'error';
-          this.showMessage = true;
-  
-          // Hide the error message after 3 seconds
-          setTimeout(() => {
-            this.showMessage = false;
-          }, 3000);
-        } finally {
-          this.loading = false;
-        }
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
- /* Center the login container */
+  },
+};
+</script>
+
+<style scoped>
 .login-container {
   max-width: 450px;
   margin: 50px auto;
   padding: 40px;
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  text-align: center; /* Center text inside the container */
+  background: var(--color-background); /* Use dark background */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center items horizontally */
-  justify-content: center; /* Center items vertically */
+  align-items: center;
 }
 
-/* Center the title */
 .title {
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 30px;
-  color: #333;
+  color: var(--color-heading); /* Use dark text color */
 }
 
-/* Center the form elements */
 .form {
-  width: 100%; /* Make form take full width of the container */
-  max-width: 400px; /* Optional: limit the maximum width of the form */
-  text-align: left; /* Align text inside the form */
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
 }
 
-/* Style for form groups */
 .form-group {
   margin-bottom: 25px;
   display: flex;
   flex-direction: column;
 }
 
-/* Style for labels */
 label {
   margin-bottom: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #333;
-  text-align: left; /* Align label text to the left */
+  color: var(--color-text); /* Use dark text color */
+  text-align: left;
 }
 
-/* Style for inputs */
 input {
   width: 100%;
   padding: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border); /* Use dark border */
   border-radius: 8px;
   font-size: 1rem;
-  transition: border 0.3s ease;
+  background: var(--color-background-soft); /* Slightly lighter for input */
+  color: var(--color-text); /* Dark text in input */
 }
 
-/* Input focus style */
 input:focus {
-  border-color: #4caf50;
+  border-color: #00ed64;
   outline: none;
   box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
 }
 
-/* Style for login button */
 .login-button {
   width: 100%;
   padding: 14px;
-  background-color: #4caf50;
-  color: white;
+  background-color: #00ed64;
+  color: rgb(0, 0, 0);
   border: none;
   border-radius: 8px;
   font-size: 1rem;
+  font-weight: bolder; /* Ensure text is bold */
   cursor: pointer;
   transition: background-color 0.3s, box-shadow 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
 }
 
-/* Hover and disabled states for login button */
+/* Hover and disabled states */
 .login-button:hover {
-  background-color: #45a049;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  color: #00ed64;
+  background-color: #000000; /* Darker green on hover */
 }
-
 .login-button:disabled {
   background-color: #b0bec5;
 }
 
-/* Style for loading spinner */
 .loading-spinner {
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #4caf50;
+  border-top: 3px solid #00ed64;
   border-radius: 50%;
   width: 18px;
   height: 18px;
@@ -195,7 +160,6 @@ input:focus {
   margin-right: 8px;
 }
 
-/* Keyframes for spinner animation */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -205,22 +169,19 @@ input:focus {
   }
 }
 
-/* Style for login link */
 .login-link {
   margin-top: 20px;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--color-text);
 }
 
 .login-link a {
   text-decoration: none;
-  color: #4caf50;
+  color: #00ed64;
   font-weight: bold;
 }
 
 .login-link a:hover {
   text-decoration: underline;
 }
-
-  </style>
-  
+</style>

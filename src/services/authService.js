@@ -11,25 +11,22 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(config => {
   const token = localStorage.getItem('accessToken');
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers['Authorization'] = `${token}`;
   }
   return config;
 }, error => {
   return Promise.reject(error);
 });
 
-// Function to handle login
+// Login function
 export async function login(email, password) {
   try {
     const response = await apiClient.post('/api/auth/login', { email, password });
-    const { accessToken, refreshToken } = response.data;
-    
-    // Store tokens in localStorage
+    const { accessToken, refreshToken, username } = response.data;
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-
-    // Set default Authorization header for future requests
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    localStorage.setItem('username', username);
+    apiClient.defaults.headers.common['Authorization'] = `${accessToken}`;
 
     return response.data;
   } catch (error) {
@@ -37,45 +34,39 @@ export async function login(email, password) {
   }
 }
 
-// Function to handle registration
+// Register function
 export async function register(username, email, password) {
-    console.log('register', username, email, password);
-    
-    try {
-      const response = await apiClient.post('/api/auth/register', { username, email, password });
-      // Optionally handle post-registration actions (e.g., redirect to login)
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+  try {
+    const response = await apiClient.post('/api/auth/register', { username, email, password });
+    return response.data;
+  } catch (error) {
+    throw error;
   }
+}
 
-// Function to handle logout
+// Logout function
 export function logout() {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('username');
   apiClient.defaults.headers.common['Authorization'] = '';
 }
 
-// Function to refresh the access token
+// Refresh token function
 export async function refreshToken() {
   try {
     const response = await apiClient.post('/api/auth/refresh', {
       refreshToken: localStorage.getItem('refreshToken'),
     });
     const { accessToken } = response.data;
-    
-    // Update access token in localStorage
     localStorage.setItem('accessToken', accessToken);
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
     return accessToken;
   } catch (error) {
     throw error;
   }
 }
 
-// Use Axios interceptors to handle token refresh on 401 responses
+// Axios response interceptor to refresh token on 401
 apiClient.interceptors.response.use(
   response => response,
   async error => {
@@ -86,11 +77,13 @@ apiClient.interceptors.response.use(
         return apiClient(error.config);
       } catch (refreshError) {
         console.error('Refresh token error:', refreshError);
-        // Handle logout or redirect to login page
         logout();
-        // Example: this.$router.push('/login');
       }
     }
     return Promise.reject(error);
   }
 );
+
+
+
+export default apiClient;
